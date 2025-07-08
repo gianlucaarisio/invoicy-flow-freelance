@@ -31,36 +31,38 @@ const mainItems = [
 ];
 
 export function AppSidebar() {
-  const { collapsed } = useSidebar();
+  const { state } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
+  
+  const isCollapsed = state === 'collapsed';
 
   const isActive = (path: string) => currentPath === path;
   const getNavClass = ({ isActive }: { isActive: boolean }) =>
     isActive ? 'bg-primary text-primary-foreground font-medium' : 'hover:bg-accent';
 
   return (
-    <Sidebar className={collapsed ? 'w-14' : 'w-64'} collapsible>
+    <Sidebar className={isCollapsed ? 'w-14' : 'w-64'} collapsible="icon">
       <SidebarContent className="bg-white border-r">
         {/* Logo/Brand */}
         <div className="p-4 border-b">
-          {!collapsed && (
+          {!isCollapsed && (
             <div className="flex items-center gap-2">
               <Receipt className="h-6 w-6 text-primary" />
               <span className="font-semibold text-lg">InvoiceGen</span>
             </div>
           )}
-          {collapsed && (
+          {isCollapsed && (
             <Receipt className="h-6 w-6 text-primary mx-auto" />
           )}
         </div>
 
         {/* Create New Document Button */}
         <div className="p-4">
-          <Button asChild className="w-full" size={collapsed ? 'icon' : 'default'}>
+          <Button asChild className="w-full" size={isCollapsed ? 'icon' : 'default'}>
             <NavLink to="/documents/create">
               <Plus className="h-4 w-4" />
-              {!collapsed && <span className="ml-2">New Document</span>}
+              {!isCollapsed && <span className="ml-2">New Document</span>}
             </NavLink>
           </Button>
         </div>
@@ -74,7 +76,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} end className={getNavClass}>
                       <item.icon className="h-4 w-4" />
-                      {!collapsed && <span className="ml-2">{item.title}</span>}
+                      {!isCollapsed && <span className="ml-2">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
