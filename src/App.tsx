@@ -14,6 +14,7 @@ import Clients from "@/pages/Clients";
 import Items from "@/pages/Items";
 import Documents from "@/pages/Documents";
 import CreateDocument from "@/pages/CreateDocument";
+import SupabaseTestPage from "@/pages/SupabaseTestPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/supabase-test" element={<SupabaseTestPage />} />
             <Route path="/" element={
               <SidebarProvider>
                 <AppLayout />
