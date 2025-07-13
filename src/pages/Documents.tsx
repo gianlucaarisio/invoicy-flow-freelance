@@ -28,62 +28,8 @@ const Documents = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const { toast } = useToast();
 
-  // Mock data - replace with real data management
-  const [documents, setDocuments] = useState<Document[]>([
-    {
-      id: '1',
-      type: 'Invoice',
-      number: 'INV-2024-001',
-      clientName: 'Acme Corporation',
-      issueDate: '2024-01-15',
-      dueDate: '2024-02-14',
-      status: 'Paid',
-      amount: 2500.00,
-      notes: 'Website development project'
-    },
-    {
-      id: '2',
-      type: 'Quote',
-      number: 'QUO-2024-001',
-      clientName: 'Tech Solutions Inc',
-      issueDate: '2024-01-14',
-      status: 'Issued',
-      amount: 1800.00,
-      notes: 'Mobile app design proposal'
-    },
-    {
-      id: '3',
-      type: 'Invoice',
-      number: 'INV-2024-002',
-      clientName: 'Design Studio LLC',
-      issueDate: '2024-01-10',
-      dueDate: '2024-02-09',
-      status: 'Overdue',
-      amount: 3200.00,
-      notes: 'Brand identity package'
-    },
-    {
-      id: '4',
-      type: 'Quote',
-      number: 'QUO-2024-002',
-      clientName: 'StartUp Inc',
-      issueDate: '2024-01-12',
-      status: 'Draft',
-      amount: 950.00,
-      notes: 'SEO consultation'
-    },
-    {
-      id: '5',
-      type: 'Invoice',
-      number: 'INV-2024-003',
-      clientName: 'Tech Solutions Inc',
-      issueDate: '2024-01-18',
-      dueDate: '2024-02-17',
-      status: 'Issued',
-      amount: 4200.00,
-      notes: 'E-commerce platform development'
-    }
-  ]);
+  // Document state - starts empty for clean app
+  const [documents, setDocuments] = useState<Document[]>([]);
 
   const getStatusColor = (status: string) => {
     switch (status) {

@@ -51,9 +51,17 @@ const CreateDocument = () => {
     { id: '4', name: 'SEO Optimization', unitPrice: 500, unitOfMeasure: 'project' }
   ];
 
+  // Generate document number
+  const generateDocumentNumber = (type: 'Quote' | 'Invoice') => {
+    const prefix = type === 'Quote' ? 'QUO' : 'INV';
+    const year = new Date().getFullYear();
+    const number = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    return `${prefix}-${year}-${number}`;
+  };
+
   const [formData, setFormData] = useState<DocumentFormData>({
     type: 'Quote',
-    number: '',
+    number: generateDocumentNumber('Quote'),
     clientId: '',
     issueDate: new Date().toISOString().split('T')[0],
     dueDate: '',
@@ -62,14 +70,6 @@ const CreateDocument = () => {
   });
 
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
-
-  // Generate document number
-  const generateDocumentNumber = (type: 'Quote' | 'Invoice') => {
-    const prefix = type === 'Quote' ? 'QUO' : 'INV';
-    const year = new Date().getFullYear();
-    const number = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    return `${prefix}-${year}-${number}`;
-  };
 
   // Update document number when type changes
   const handleTypeChange = (type: 'Quote' | 'Invoice') => {
@@ -141,14 +141,29 @@ const CreateDocument = () => {
       return;
     }
 
-    // Here you would save the document to your backend
-    console.log('Document data:', {
-      ...formData,
-      lineItems,
-      subtotal,
-      vatAmount,
-      totalAmount
-    });
+    if (!formData.clientId) {
+      toast({
+        title: 'Error',
+        description: 'Please select a client.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    // Create the document - this would normally save to backend/database
+    const newDocument = {
+      id: Date.now().toString(),
+      type: formData.type,
+      number: formData.number,
+      clientName: mockClients.find(c => c.id === formData.clientId)?.name || 'Unknown Client',
+      issueDate: formData.issueDate,
+      dueDate: formData.dueDate || undefined,
+      status: 'Draft' as const,
+      amount: totalAmount,
+      notes: formData.notes || undefined
+    };
+
+    console.log('Document created:', newDocument);
 
     toast({
       title: 'Document created',
