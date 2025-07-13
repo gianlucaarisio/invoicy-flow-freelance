@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Plus, Minus, Save, ArrowLeft, Calculator } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface LineItem {
   id: string;
@@ -36,20 +37,39 @@ const CreateDocument = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Mock data - replace with real data from API
-  const mockClients = [
-    { id: '1', name: 'Acme Corporation' },
-    { id: '2', name: 'Tech Solutions Inc' },
-    { id: '3', name: 'Design Studio LLC' },
-    { id: '4', name: 'StartUp Inc' }
-  ];
+  // State for clients and items from Supabase
+  const [clients, setClients] = useState<Array<{id: string, name: string}>>([]);
+  const [items, setItems] = useState<Array<{id: string, name: string, unit_price: number}>>([]);
+  const [loading, setLoading] = useState(true);
 
-  const mockItems = [
-    { id: '1', name: 'Web Development - Frontend', unitPrice: 85, unitOfMeasure: 'hour' },
-    { id: '2', name: 'UI/UX Design', unitPrice: 75, unitOfMeasure: 'hour' },
-    { id: '3', name: 'Project Management', unitPrice: 65, unitOfMeasure: 'hour' },
-    { id: '4', name: 'SEO Optimization', unitPrice: 500, unitOfMeasure: 'project' }
-  ];
+  // Fetch clients and items from Supabase
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [clientsResponse, itemsResponse] = await Promise.all([
+          supabase.from('clients').select('id, name'),
+          supabase.from('items').select('id, name, unit_price')
+        ]);
+
+        if (clientsResponse.error) throw clientsResponse.error;
+        if (itemsResponse.error) throw itemsResponse.error;
+
+        setClients(clientsResponse.data || []);
+        setItems(itemsResponse.data || []);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load clients and items.',
+          variant: 'destructive'
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   // Generate document number
   const generateDocumentNumber = (type: 'Quote' | 'Invoice') => {
@@ -107,10 +127,10 @@ const CreateDocument = () => {
         
         // If selecting an item from catalog, populate details
         if (field === 'itemId' && value) {
-          const selectedItem = mockItems.find(mockItem => mockItem.id === value);
+          const selectedItem = items.find(item => item.id === value);
           if (selectedItem) {
             updatedItem.itemName = selectedItem.name;
-            updatedItem.unitPrice = selectedItem.unitPrice;
+            updatedItem.unitPrice = selectedItem.unit_price;
           }
         }
         
@@ -129,7 +149,7 @@ const CreateDocument = () => {
   const totalAmount = subtotal + vatAmount;
 
   // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (lineItems.length === 0) {
@@ -150,28 +170,68 @@ const CreateDocument = () => {
       return;
     }
 
-    // Create the document - this would normally save to backend/database
-    const newDocument = {
-      id: Date.now().toString(),
-      type: formData.type,
-      number: formData.number,
-      clientName: mockClients.find(c => c.id === formData.clientId)?.name || 'Unknown Client',
-      issueDate: formData.issueDate,
-      dueDate: formData.dueDate || undefined,
-      status: 'Draft' as const,
-      amount: totalAmount,
-      notes: formData.notes || undefined
-    };
+    try {
+      // Create the document in Supabase
+      const { data: documentData, error: documentError } = await supabase
+        .from('documents')
+        .insert({
+          type: formData.type,
+          number: formData.number,
+          client_id: formData.clientId,
+          issue_date: formData.issueDate,
+          due_date: formData.dueDate || null,
+          status: 'Draft',
+          subtotal: subtotal,
+          vat_percentage: formData.vatPercentage,
+          vat_amount: vatAmount,
+          total_amount: totalAmount,
+          notes: formData.notes || null
+        })
+        .select()
+        .single();
 
-    console.log('Document created:', newDocument);
+      if (documentError) throw documentError;
 
-    toast({
-      title: 'Document created',
-      description: `${formData.type} ${formData.number} has been successfully created.`,
-    });
+      // Create line items
+      const lineItemsData = lineItems.map(item => ({
+        document_id: documentData.id,
+        item_id: item.itemId || null,
+        item_name: item.itemName,
+        description: item.description,
+        quantity: item.quantity,
+        unit_price: item.unitPrice,
+        line_total: item.lineTotal
+      }));
 
-    navigate('/documents');
+      const { error: lineItemsError } = await supabase
+        .from('document_line_items')
+        .insert(lineItemsData);
+
+      if (lineItemsError) throw lineItemsError;
+
+      toast({
+        title: 'Document created',
+        description: `${formData.type} ${formData.number} has been successfully created.`,
+      });
+
+      navigate('/documents');
+    } catch (error) {
+      console.error('Error creating document:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to create document.',
+        variant: 'destructive'
+      });
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -233,7 +293,7 @@ const CreateDocument = () => {
                   <SelectValue placeholder="Select a client" />
                 </SelectTrigger>
                 <SelectContent>
-                  {mockClients.map((client) => (
+                  {clients.map((client) => (
                     <SelectItem key={client.id} value={client.id}>
                       {client.name}
                     </SelectItem>
@@ -326,9 +386,9 @@ const CreateDocument = () => {
                             <SelectValue placeholder="Select item" />
                           </SelectTrigger>
                           <SelectContent>
-                            {mockItems.map((mockItem) => (
-                              <SelectItem key={mockItem.id} value={mockItem.id}>
-                                {mockItem.name}
+                            {items.map((item) => (
+                              <SelectItem key={item.id} value={item.id}>
+                                {item.name}
                               </SelectItem>
                             ))}
                           </SelectContent>

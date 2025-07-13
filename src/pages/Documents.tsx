@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,16 +9,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Search, Filter, FileText, Eye, Edit, Trash2, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Document {
   id: string;
   type: 'Quote' | 'Invoice';
   number: string;
-  clientName: string;
-  issueDate: string;
-  dueDate?: string;
+  client_name: string;
+  issue_date: string;
+  due_date?: string;
   status: 'Draft' | 'Issued' | 'Accepted' | 'Rejected' | 'Paid' | 'Overdue';
-  amount: number;
+  total_amount: number;
   notes?: string;
 }
 
@@ -26,10 +27,51 @@ const Documents = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  // Document state - starts empty for clean app
-  const [documents, setDocuments] = useState<Document[]>([]);
+  // Fetch documents from Supabase
+  const fetchDocuments = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('documents')
+        .select(`
+          *,
+          clients(name)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const formattedDocuments = data?.map(doc => ({
+        id: doc.id,
+        type: doc.type as 'Quote' | 'Invoice',
+        number: doc.number,
+        client_name: doc.clients?.name || 'Unknown Client',
+        issue_date: doc.issue_date,
+        due_date: doc.due_date,
+        status: doc.status as Document['status'],
+        total_amount: parseFloat(doc.total_amount.toString()),
+        notes: doc.notes
+      })) || [];
+
+      setDocuments(formattedDocuments);
+    } catch (error) {
+      console.error('Error fetching documents:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch documents.',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDocuments();
+  }, []);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -52,7 +94,7 @@ const Documents = () => {
   const filteredDocuments = documents.filter(doc => {
     const matchesSearch = 
       doc.number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doc.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      doc.client_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (doc.notes?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
     
     const matchesType = typeFilter === 'all' || doc.type.toLowerCase() === typeFilter;
@@ -61,12 +103,28 @@ const Documents = () => {
     return matchesSearch && matchesType && matchesStatus;
   });
 
-  const handleDelete = (docId: string) => {
-    setDocuments(documents.filter(doc => doc.id !== docId));
-    toast({
-      title: 'Document deleted',
-      description: 'Document has been successfully deleted.',
-    });
+  const handleDelete = async (docId: string) => {
+    try {
+      const { error } = await supabase
+        .from('documents')
+        .delete()
+        .eq('id', docId);
+
+      if (error) throw error;
+
+      setDocuments(documents.filter(doc => doc.id !== docId));
+      toast({
+        title: 'Document deleted',
+        description: 'Document has been successfully deleted.',
+      });
+    } catch (error) {
+      console.error('Error deleting document:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete document.',
+        variant: 'destructive'
+      });
+    }
   };
 
   // Calculate stats
@@ -74,10 +132,18 @@ const Documents = () => {
     total: documents.length,
     quotes: documents.filter(doc => doc.type === 'Quote').length,
     invoices: documents.filter(doc => doc.type === 'Invoice').length,
-    totalAmount: documents.reduce((sum, doc) => sum + doc.amount, 0),
+    totalAmount: documents.reduce((sum, doc) => sum + doc.total_amount, 0),
     pending: documents.filter(doc => doc.status === 'Issued').length,
     overdue: documents.filter(doc => doc.status === 'Overdue').length
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg">Loading documents...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -215,10 +281,10 @@ const Documents = () => {
                       {doc.type}
                     </Badge>
                   </TableCell>
-                  <TableCell>{doc.clientName}</TableCell>
-                  <TableCell>{new Date(doc.issueDate).toLocaleDateString()}</TableCell>
+                  <TableCell>{doc.client_name}</TableCell>
+                  <TableCell>{new Date(doc.issue_date).toLocaleDateString()}</TableCell>
                   <TableCell>
-                    {doc.dueDate ? new Date(doc.dueDate).toLocaleDateString() : '-'}
+                    {doc.due_date ? new Date(doc.due_date).toLocaleDateString() : '-'}
                   </TableCell>
                   <TableCell>
                     <Badge className={getStatusColor(doc.status)} variant="secondary">
@@ -226,7 +292,7 @@ const Documents = () => {
                     </Badge>
                   </TableCell>
                   <TableCell className="font-medium">
-                    ${doc.amount.toLocaleString()}
+                    ${doc.total_amount.toLocaleString()}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
