@@ -1,4 +1,5 @@
 
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,24 +14,64 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
 
 const Dashboard = () => {
-  // Mock data - replace with real data
-  const stats = {
-    totalClients: 12,
-    totalItems: 28,
-    totalDocuments: 45,
-    pendingInvoices: 8,
-    revenueThisMonth: 12450,
-    overdueInvoices: 3
-  };
+  const [stats, setStats] = useState({
+    totalClients: 0,
+    totalItems: 0,
+    totalDocuments: 0,
+    pendingInvoices: 0,
+    revenueThisMonth: 0,
+    overdueInvoices: 0
+  });
+  const [recentDocuments, setRecentDocuments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const recentDocuments = [
-    { id: '1', type: 'Invoice', number: 'INV-001', client: 'Acme Corp', amount: 2500, status: 'Paid', date: '2024-01-15' },
-    { id: '2', type: 'Quote', number: 'QUO-001', client: 'Tech Solutions', amount: 1800, status: 'Pending', date: '2024-01-14' },
-    { id: '3', type: 'Invoice', number: 'INV-002', client: 'Design Studio', amount: 3200, status: 'Overdue', date: '2024-01-10' },
-    { id: '4', type: 'Quote', number: 'QUO-002', client: 'StartUp Inc', amount: 950, status: 'Draft', date: '2024-01-12' },
-  ];
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      // Fetch counts
+      const [clientsResult, itemsResult, documentsResult] = await Promise.all([
+        supabase.from('clients').select('*', { count: 'exact' }),
+        supabase.from('items').select('*', { count: 'exact' }),
+        supabase.from('documents').select('*', { count: 'exact' })
+      ]);
+
+      // Fetch recent documents with client names
+      const { data: recentDocs } = await supabase
+        .from('documents')
+        .select(`
+          *,
+          clients (name)
+        `)
+        .order('created_at', { ascending: false })
+        .limit(4);
+
+      const pendingCount = documentsResult.data?.filter(doc => doc.status === 'Pending').length || 0;
+      const overdueCount = documentsResult.data?.filter(doc => doc.status === 'Overdue').length || 0;
+      const totalRevenue = documentsResult.data?.reduce((sum, doc) => sum + doc.total_amount, 0) || 0;
+
+      setStats({
+        totalClients: clientsResult.count || 0,
+        totalItems: itemsResult.count || 0,
+        totalDocuments: documentsResult.count || 0,
+        pendingInvoices: pendingCount,
+        revenueThisMonth: totalRevenue,
+        overdueInvoices: overdueCount
+      });
+
+      setRecentDocuments(recentDocs || []);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -142,25 +183,37 @@ const Dashboard = () => {
             <CardDescription>Your latest quotes and invoices</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {recentDocuments.map((doc) => (
-                <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="flex flex-col">
-                      <span className="font-medium">{doc.number}</span>
-                      <span className="text-sm text-muted-foreground">{doc.client}</span>
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : recentDocuments.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">No documents yet</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {recentDocuments.map((doc) => (
+                  <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="flex flex-col">
+                        <span className="font-medium">{doc.number}</span>
+                        <span className="text-sm text-muted-foreground">
+                          {doc.clients?.name || 'Unknown Client'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Badge variant="secondary">{doc.type}</Badge>
+                      <Badge className={getStatusColor(doc.status)} variant="secondary">
+                        {doc.status}
+                      </Badge>
+                      <span className="font-medium">${doc.total_amount.toLocaleString()}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Badge variant="secondary">{doc.type}</Badge>
-                    <Badge className={getStatusColor(doc.status)} variant="secondary">
-                      {doc.status}
-                    </Badge>
-                    <span className="font-medium">${doc.amount.toLocaleString()}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
             <div className="mt-4">
               <Button asChild variant="outline" className="w-full">
                 <Link to="/documents">View All Documents</Link>

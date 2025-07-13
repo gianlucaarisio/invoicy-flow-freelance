@@ -1,5 +1,7 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,144 +13,63 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Search, Package, Edit, Trash2, DollarSign } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-interface Item {
-  id: string;
-  name: string;
-  description: string;
-  unitPrice: number;
-  unitOfMeasure: string;
-  category: string;
-  timesUsed: number;
-}
+type Item = Tables<'items'>;
 
 const Items = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
+  const [items, setItems] = useState<Item[]>([]);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  // Mock data - replace with real data management
-  const [items, setItems] = useState<Item[]>([
-    {
-      id: '1',
-      name: 'Web Development - Frontend',
-      description: 'Frontend development services including React, TypeScript, and responsive design',
-      unitPrice: 85,
-      unitOfMeasure: 'hour',
-      category: 'Development',
-      timesUsed: 24
-    },
-    {
-      id: '2',
-      name: 'UI/UX Design',
-      description: 'User interface and user experience design services',
-      unitPrice: 75,
-      unitOfMeasure: 'hour',
-      category: 'Design',
-      timesUsed: 18
-    },
-    {
-      id: '3',
-      name: 'Project Management',
-      description: 'Project coordination and management services',
-      unitPrice: 65,
-      unitOfMeasure: 'hour',
-      category: 'Management',
-      timesUsed: 12
-    },
-    {
-      id: '4',
-      name: 'SEO Optimization',
-      description: 'Search engine optimization and content strategy',
-      unitPrice: 500,
-      unitOfMeasure: 'project',
-      category: 'Marketing',
-      timesUsed: 8
+  useEffect(() => {
+    fetchItems();
+  }, []);
+
+  const fetchItems = async () => {
+    try {
+      const { data, error } = await supabase.from('items').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+      setItems(data || []);
+    } catch (error) {
+      console.error('Error:', error);
+      toast({ title: "Error", description: "Failed to fetch items", variant: "destructive" });
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
 
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    unitPrice: 0,
-    unitOfMeasure: '',
-    category: ''
-  });
+  const handleSubmit = async (formData: any) => {
+    try {
+      if (editingItem) {
+        await supabase.from('items').update(formData).eq('id', editingItem.id);
+      } else {
+        await supabase.from('items').insert([formData]);
+      }
+      fetchItems();
+      setIsDialogOpen(false);
+      toast({ title: "Success", description: "Item saved successfully" });
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to save item", variant: "destructive" });
+    }
+  };
 
-  const unitOptions = ['hour', 'day', 'project', 'piece', 'page', 'month'];
-  const categoryOptions = ['Development', 'Design', 'Management', 'Marketing', 'Consulting', 'Other'];
+  const handleDelete = async (id: string) => {
+    try {
+      await supabase.from('items').delete().eq('id', id);
+      fetchItems();
+      toast({ title: "Success", description: "Item deleted successfully" });
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to delete item", variant: "destructive" });
+    }
+  };
 
   const filteredItems = items.filter(item =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.description.toLowerCase().includes(searchTerm.toLowerCase())
+    (item.description || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (editingItem) {
-      // Update existing item
-      setItems(items.map(item => 
-        item.id === editingItem.id 
-          ? { ...item, ...formData }
-          : item
-      ));
-      toast({
-        title: 'Item updated',
-        description: 'Item has been successfully updated.',
-      });
-    } else {
-      // Add new item
-      const newItem: Item = {
-        id: Date.now().toString(),
-        ...formData,
-        timesUsed: 0
-      };
-      setItems([...items, newItem]);
-      toast({
-        title: 'Item added',
-        description: 'New item/service has been successfully added.',
-      });
-    }
-
-    // Reset form
-    setFormData({ name: '', description: '', unitPrice: 0, unitOfMeasure: '', category: '' });
-    setEditingItem(null);
-    setIsDialogOpen(false);
-  };
-
-  const handleEdit = (item: Item) => {
-    setEditingItem(item);
-    setFormData({
-      name: item.name,
-      description: item.description,
-      unitPrice: item.unitPrice,
-      unitOfMeasure: item.unitOfMeasure,
-      category: item.category
-    });
-    setIsDialogOpen(true);
-  };
-
-  const handleDelete = (itemId: string) => {
-    setItems(items.filter(item => item.id !== itemId));
-    toast({
-      title: 'Item deleted',
-      description: 'Item has been successfully deleted.',
-    });
-  };
-
-  const getCategoryColor = (category: string) => {
-    const colors: Record<string, string> = {
-      'Development': 'bg-blue-100 text-blue-800',
-      'Design': 'bg-purple-100 text-purple-800',
-      'Management': 'bg-green-100 text-green-800',
-      'Marketing': 'bg-orange-100 text-orange-800',
-      'Consulting': 'bg-indigo-100 text-indigo-800',
-      'Other': 'bg-gray-100 text-gray-800'
-    };
-    return colors[category] || colors['Other'];
-  };
 
   return (
     <div className="space-y-6">

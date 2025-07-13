@@ -1,5 +1,7 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,124 +12,63 @@ import { Textarea } from '@/components/ui/textarea';
 import { Plus, Search, Mail, Phone, MapPin, Edit, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-interface Client {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-  taxId: string;
-  invoiceCount: number;
-  totalAmount: number;
-}
+type Client = Tables<'clients'>;
 
 const Clients = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  // Mock data - replace with real data management
-  const [clients, setClients] = useState<Client[]>([
-    {
-      id: '1',
-      name: 'Acme Corporation',
-      email: 'contact@acme.com',
-      phone: '+1 (555) 123-4567',
-      address: '123 Business St, City, State 12345',
-      taxId: 'TAX123456789',
-      invoiceCount: 12,
-      totalAmount: 25000
-    },
-    {
-      id: '2',
-      name: 'Tech Solutions Inc',
-      email: 'info@techsolutions.com',
-      phone: '+1 (555) 987-6543',
-      address: '456 Innovation Ave, Tech City, TC 67890',
-      taxId: 'TAX987654321',
-      invoiceCount: 8,
-      totalAmount: 18500
-    },
-    {
-      id: '3',
-      name: 'Design Studio LLC',
-      email: 'hello@designstudio.com',
-      phone: '+1 (555) 456-7890',
-      address: '789 Creative Blvd, Art Town, AT 13579',
-      taxId: 'TAX456789123',
-      invoiceCount: 15,
-      totalAmount: 32000
-    }
-  ]);
+  useEffect(() => {
+    fetchClients();
+  }, []);
 
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    address: '',
-    taxId: ''
-  });
+  const fetchClients = async () => {
+    try {
+      const { data, error } = await supabase.from('clients').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+      setClients(data || []);
+    } catch (error) {
+      console.error('Error:', error);
+      toast({ title: "Error", description: "Failed to fetch clients", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (formData: any) => {
+    try {
+      if (editingClient) {
+        await supabase.from('clients').update(formData).eq('id', editingClient.id);
+      } else {
+        await supabase.from('clients').insert([formData]);
+      }
+      fetchClients();
+      setIsDialogOpen(false);
+      toast({ title: "Success", description: "Client saved successfully" });
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to save client", variant: "destructive" });
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await supabase.from('clients').delete().eq('id', id);
+      fetchClients();
+      toast({ title: "Success", description: "Client deleted successfully" });
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to delete client", variant: "destructive" });
+    }
+  };
 
   const filteredClients = clients.filter(client =>
     client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.email.toLowerCase().includes(searchTerm.toLowerCase())
+    (client.email || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (editingClient) {
-      // Update existing client
-      setClients(clients.map(client => 
-        client.id === editingClient.id 
-          ? { ...client, ...formData }
-          : client
-      ));
-      toast({
-        title: 'Client updated',
-        description: 'Client information has been successfully updated.',
-      });
-    } else {
-      // Add new client
-      const newClient: Client = {
-        id: Date.now().toString(),
-        ...formData,
-        invoiceCount: 0,
-        totalAmount: 0
-      };
-      setClients([...clients, newClient]);
-      toast({
-        title: 'Client added',
-        description: 'New client has been successfully added.',
-      });
-    }
-
-    // Reset form
-    setFormData({ name: '', email: '', phone: '', address: '', taxId: '' });
-    setEditingClient(null);
-    setIsDialogOpen(false);
-  };
-
-  const handleEdit = (client: Client) => {
-    setEditingClient(client);
-    setFormData({
-      name: client.name,
-      email: client.email,
-      phone: client.phone,
-      address: client.address,
-      taxId: client.taxId
-    });
-    setIsDialogOpen(true);
-  };
-
-  const handleDelete = (clientId: string) => {
-    setClients(clients.filter(client => client.id !== clientId));
-    toast({
-      title: 'Client deleted',
-      description: 'Client has been successfully deleted.',
-    });
-  };
 
   return (
     <div className="space-y-6">
