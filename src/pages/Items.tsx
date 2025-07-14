@@ -15,12 +15,33 @@ import { useToast } from '@/hooks/use-toast';
 
 type Item = Tables<'items'>;
 
+const unitOptions = ['hour', 'day', 'piece', 'kg', 'liter', 'meter', 'square_meter', 'service'];
+const categoryOptions = ['Service', 'Product', 'Consulting', 'Maintenance', 'Development', 'Design'];
+
+const getCategoryColor = (category: string) => {
+  const colors: { [key: string]: string } = {
+    'Service': 'bg-blue-100 text-blue-800',
+    'Product': 'bg-green-100 text-green-800',
+    'Consulting': 'bg-purple-100 text-purple-800',
+    'Maintenance': 'bg-orange-100 text-orange-800',
+    'Development': 'bg-red-100 text-red-800',
+    'Design': 'bg-pink-100 text-pink-800'
+  };
+  return colors[category] || 'bg-gray-100 text-gray-800';
+};
+
 const Items = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    unit_price: 0,
+    unit_of_measure: 'hour'
+  });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -40,7 +61,8 @@ const Items = () => {
     }
   };
 
-  const handleSubmit = async (formData: any) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
       if (editingItem) {
         await supabase.from('items').update(formData).eq('id', editingItem.id);
@@ -49,6 +71,8 @@ const Items = () => {
       }
       fetchItems();
       setIsDialogOpen(false);
+      setEditingItem(null);
+      setFormData({ name: '', description: '', unit_price: 0, unit_of_measure: 'hour' });
       toast({ title: "Success", description: "Item saved successfully" });
     } catch (error) {
       toast({ title: "Error", description: "Failed to save item", variant: "destructive" });
@@ -63,6 +87,17 @@ const Items = () => {
     } catch (error) {
       toast({ title: "Error", description: "Failed to delete item", variant: "destructive" });
     }
+  };
+
+  const handleEdit = (item: Item) => {
+    setEditingItem(item);
+    setFormData({
+      name: item.name,
+      description: item.description || '',
+      unit_price: item.unit_price,
+      unit_of_measure: item.unit_of_measure || 'hour'
+    });
+    setIsDialogOpen(true);
   };
 
   const filteredItems = items.filter(item =>
@@ -83,7 +118,7 @@ const Items = () => {
           <DialogTrigger asChild>
             <Button onClick={() => {
               setEditingItem(null);
-              setFormData({ name: '', description: '', unitPrice: 0, unitOfMeasure: '', category: '' });
+              setFormData({ name: '', description: '', unit_price: 0, unit_of_measure: 'hour' });
             }}>
               <Plus className="h-4 w-4 mr-2" />
               Add Item/Service
@@ -119,23 +154,23 @@ const Items = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="unitPrice">Unit Price</Label>
+                  <Label htmlFor="unit_price">Unit Price</Label>
                   <Input
-                    id="unitPrice"
+                    id="unit_price"
                     type="number"
                     step="0.01"
                     min="0"
-                    value={formData.unitPrice}
-                    onChange={(e) => setFormData({ ...formData, unitPrice: parseFloat(e.target.value) || 0 })}
+                    value={formData.unit_price}
+                    onChange={(e) => setFormData({ ...formData, unit_price: parseFloat(e.target.value) || 0 })}
                     placeholder="0.00"
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="unitOfMeasure">Unit</Label>
+                  <Label htmlFor="unit_of_measure">Unit</Label>
                   <Select
-                    value={formData.unitOfMeasure}
-                    onValueChange={(value) => setFormData({ ...formData, unitOfMeasure: value })}
+                    value={formData.unit_of_measure}
+                    onValueChange={(value) => setFormData({ ...formData, unit_of_measure: value })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select unit" />
@@ -149,24 +184,6 @@ const Items = () => {
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
-                <Select
-                  value={formData.category}
-                  onValueChange={(value) => setFormData({ ...formData, category: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categoryOptions.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
               <Button type="submit" className="w-full">
                 {editingItem ? 'Update Item' : 'Add Item'}
@@ -203,27 +220,27 @@ const Items = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${items.length > 0 ? (items.reduce((sum, item) => sum + item.unitPrice, 0) / items.length).toFixed(2) : '0.00'}
+              ${items.length > 0 ? (items.reduce((sum, item) => sum + item.unit_price, 0) / items.length).toFixed(2) : '0.00'}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Most Used</CardTitle>
+            <CardTitle className="text-sm font-medium">Highest Priced</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-sm font-bold">
-              {items.length > 0 ? items.reduce((max, item) => item.timesUsed > max.timesUsed ? item : max).name : 'N/A'}
+              {items.length > 0 ? items.reduce((max, item) => item.unit_price > max.unit_price ? item : max).name : 'N/A'}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Categories</CardTitle>
+            <CardTitle className="text-sm font-medium">Unit Types</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {new Set(items.map(item => item.category)).size}
+              {new Set(items.map(item => item.unit_of_measure)).size}
             </div>
           </CardContent>
         </Card>
@@ -238,11 +255,11 @@ const Items = () => {
                 <div className="flex-1">
                   <CardTitle className="text-lg line-clamp-2">{item.name}</CardTitle>
                   <div className="flex items-center gap-2 mt-2">
-                    <Badge className={getCategoryColor(item.category)} variant="secondary">
-                      {item.category}
+                    <Badge variant="secondary">
+                      {item.unit_of_measure}
                     </Badge>
                     <Badge variant="outline" className="text-xs">
-                      {item.timesUsed} uses
+                      ${item.unit_price.toFixed(2)}
                     </Badge>
                   </div>
                 </div>
@@ -265,12 +282,12 @@ const Items = () => {
               <div className="flex items-center justify-between pt-2 border-t">
                 <div className="flex items-center gap-1">
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-semibold">{item.unitPrice.toFixed(2)}</span>
-                  <span className="text-sm text-muted-foreground">/ {item.unitOfMeasure}</span>
+                  <span className="font-semibold">{item.unit_price.toFixed(2)}</span>
+                  <span className="text-sm text-muted-foreground">/ {item.unit_of_measure}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Package className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">{item.unitOfMeasure}</span>
+                  <span className="text-xs text-muted-foreground">{item.unit_of_measure}</span>
                 </div>
               </div>
             </CardContent>

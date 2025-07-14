@@ -20,6 +20,12 @@ const Clients = () => {
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: ''
+  });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -39,7 +45,8 @@ const Clients = () => {
     }
   };
 
-  const handleSubmit = async (formData: any) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
       if (editingClient) {
         await supabase.from('clients').update(formData).eq('id', editingClient.id);
@@ -48,6 +55,8 @@ const Clients = () => {
       }
       fetchClients();
       setIsDialogOpen(false);
+      setEditingClient(null);
+      setFormData({ name: '', email: '', phone: '', address: '' });
       toast({ title: "Success", description: "Client saved successfully" });
     } catch (error) {
       toast({ title: "Error", description: "Failed to save client", variant: "destructive" });
@@ -62,6 +71,17 @@ const Clients = () => {
     } catch (error) {
       toast({ title: "Error", description: "Failed to delete client", variant: "destructive" });
     }
+  };
+
+  const handleEdit = (client: Client) => {
+    setEditingClient(client);
+    setFormData({
+      name: client.name,
+      email: client.email || '',
+      phone: client.phone || '',
+      address: client.address || ''
+    });
+    setIsDialogOpen(true);
   };
 
   const filteredClients = clients.filter(client =>
@@ -82,7 +102,7 @@ const Clients = () => {
           <DialogTrigger asChild>
             <Button onClick={() => {
               setEditingClient(null);
-              setFormData({ name: '', email: '', phone: '', address: '', taxId: '' });
+              setFormData({ name: '', email: '', phone: '', address: '' });
             }}>
               <Plus className="h-4 w-4 mr-2" />
               Add Client
@@ -136,15 +156,6 @@ const Clients = () => {
                   rows={3}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="taxId">Tax ID / VAT Number</Label>
-                <Input
-                  id="taxId"
-                  value={formData.taxId}
-                  onChange={(e) => setFormData({ ...formData, taxId: e.target.value })}
-                  placeholder="Enter tax ID or VAT number"
-                />
-              </div>
               <Button type="submit" className="w-full">
                 {editingClient ? 'Update Client' : 'Add Client'}
               </Button>
@@ -176,21 +187,21 @@ const Clients = () => {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">With Email</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${clients.reduce((sum, client) => sum + client.totalAmount, 0).toLocaleString()}
+              {clients.filter(client => client.email).length}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Invoices</CardTitle>
+            <CardTitle className="text-sm font-medium">With Phone</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {clients.reduce((sum, client) => sum + client.invoiceCount, 0)}
+              {clients.filter(client => client.phone).length}
             </div>
           </CardContent>
         </Card>
@@ -234,12 +245,12 @@ const Clients = () => {
               )}
               <div className="flex items-center justify-between pt-2 border-t">
                 <div className="text-center">
-                  <div className="text-sm font-medium">{client.invoiceCount}</div>
-                  <div className="text-xs text-muted-foreground">Invoices</div>
+                  <div className="text-sm font-medium">{new Date(client.created_at).toLocaleDateString()}</div>
+                  <div className="text-xs text-muted-foreground">Added</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-sm font-medium">${client.totalAmount.toLocaleString()}</div>
-                  <div className="text-xs text-muted-foreground">Revenue</div>
+                  <div className="text-sm font-medium">{new Date(client.updated_at).toLocaleDateString()}</div>
+                  <div className="text-xs text-muted-foreground">Updated</div>
                 </div>
               </div>
             </CardContent>
