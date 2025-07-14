@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -43,6 +44,7 @@ interface DocumentEditDialogProps {
 }
 
 export const DocumentEditDialog = ({ documentId, open, onOpenChange, onDocumentUpdated }: DocumentEditDialogProps) => {
+  const { user } = useAuth();
   const [document, setDocument] = useState<DocumentDetails | null>(null);
   const [clients, setClients] = useState<{id: string, name: string}[]>([]);
   const [loading, setLoading] = useState(false);
@@ -239,7 +241,8 @@ export const DocumentEditDialog = ({ documentId, open, onOpenChange, onDocumentU
         description: item.description || null,
         quantity: item.quantity,
         unit_price: item.unit_price,
-        line_total: item.line_total
+        line_total: item.line_total,
+        user_id: user?.id || ''
       }));
 
       if (lineItemsToInsert.length > 0) {

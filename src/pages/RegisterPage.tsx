@@ -26,15 +26,24 @@ const RegisterPage = () => {
     setIsLoading(true);
 
     try {
-      await register(name, email, password);
-      toast({
-        title: 'Account created!',
-        description: 'Welcome to Invoice Generator.',
-      });
+      const { error } = await register(name, email, password);
+      
+      if (error) {
+        toast({
+          title: 'Registration failed',
+          description: error,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Account created!',
+          description: 'Please check your email to confirm your account.',
+        });
+      }
     } catch (error) {
       toast({
         title: 'Registration failed',
-        description: 'Please try again.',
+        description: 'An unexpected error occurred.',
         variant: 'destructive',
       });
     } finally {

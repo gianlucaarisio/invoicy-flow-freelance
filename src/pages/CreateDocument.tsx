@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,6 +37,7 @@ interface DocumentFormData {
 const CreateDocument = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   // State for clients and items from Supabase
   const [clients, setClients] = useState<Array<{id: string, name: string}>>([]);
@@ -45,10 +47,12 @@ const CreateDocument = () => {
   // Fetch clients and items from Supabase
   useEffect(() => {
     const fetchData = async () => {
+      if (!user) return;
+      
       try {
         const [clientsResponse, itemsResponse] = await Promise.all([
-          supabase.from('clients').select('id, name'),
-          supabase.from('items').select('id, name, unit_price')
+          supabase.from('clients').select('id, name').eq('user_id', user.id),
+          supabase.from('items').select('id, name, unit_price').eq('user_id', user.id)
         ]);
 
         if (clientsResponse.error) throw clientsResponse.error;
@@ -69,7 +73,7 @@ const CreateDocument = () => {
     };
 
     fetchData();
-  }, []);
+  }, [user]);
 
   // Generate document number
   const generateDocumentNumber = (type: 'Quote' | 'Invoice') => {
@@ -152,6 +156,8 @@ const CreateDocument = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!user) return;
+    
     if (lineItems.length === 0) {
       toast({
         title: 'Error',
@@ -185,7 +191,8 @@ const CreateDocument = () => {
           vat_percentage: formData.vatPercentage,
           vat_amount: vatAmount,
           total_amount: totalAmount,
-          notes: formData.notes || null
+          notes: formData.notes || null,
+          user_id: user.id
         })
         .select()
         .single();
@@ -200,7 +207,8 @@ const CreateDocument = () => {
         description: item.description,
         quantity: item.quantity,
         unit_price: item.unitPrice,
-        line_total: item.lineTotal
+        line_total: item.lineTotal,
+        user_id: user.id
       }));
 
       const { error: lineItemsError } = await supabase

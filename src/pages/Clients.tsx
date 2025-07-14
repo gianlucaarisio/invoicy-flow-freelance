@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 type Client = Tables<'clients'>;
 
 const Clients = () => {
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
@@ -33,8 +35,13 @@ const Clients = () => {
   }, []);
 
   const fetchClients = async () => {
+    if (!user) return;
     try {
-      const { data, error } = await supabase.from('clients').select('*').order('created_at', { ascending: false });
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
       if (error) throw error;
       setClients(data || []);
     } catch (error) {
@@ -47,11 +54,13 @@ const Clients = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
+    
     try {
       if (editingClient) {
         await supabase.from('clients').update(formData).eq('id', editingClient.id);
       } else {
-        await supabase.from('clients').insert([formData]);
+        await supabase.from('clients').insert([{ ...formData, user_id: user.id }]);
       }
       fetchClients();
       setIsDialogOpen(false);

@@ -23,6 +23,7 @@ export type Database = {
           name: string
           phone: string | null
           updated_at: string
+          user_id: string
         }
         Insert: {
           address?: string | null
@@ -32,6 +33,7 @@ export type Database = {
           name: string
           phone?: string | null
           updated_at?: string
+          user_id: string
         }
         Update: {
           address?: string | null
@@ -41,6 +43,7 @@ export type Database = {
           name?: string
           phone?: string | null
           updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -73,6 +76,7 @@ export type Database = {
           line_total: number
           quantity: number
           unit_price: number
+          user_id: string
         }
         Insert: {
           created_at?: string
@@ -84,6 +88,7 @@ export type Database = {
           line_total?: number
           quantity?: number
           unit_price?: number
+          user_id: string
         }
         Update: {
           created_at?: string
@@ -95,6 +100,7 @@ export type Database = {
           line_total?: number
           quantity?: number
           unit_price?: number
+          user_id?: string
         }
         Relationships: [
           {
@@ -127,6 +133,7 @@ export type Database = {
           total_amount: number
           type: string
           updated_at: string
+          user_id: string
           vat_amount: number
           vat_percentage: number
         }
@@ -143,6 +150,7 @@ export type Database = {
           total_amount?: number
           type: string
           updated_at?: string
+          user_id: string
           vat_amount?: number
           vat_percentage?: number
         }
@@ -159,6 +167,7 @@ export type Database = {
           total_amount?: number
           type?: string
           updated_at?: string
+          user_id?: string
           vat_amount?: number
           vat_percentage?: number
         }
@@ -181,6 +190,7 @@ export type Database = {
           unit_of_measure: string | null
           unit_price: number
           updated_at: string
+          user_id: string
         }
         Insert: {
           created_at?: string
@@ -190,6 +200,7 @@ export type Database = {
           unit_of_measure?: string | null
           unit_price?: number
           updated_at?: string
+          user_id: string
         }
         Update: {
           created_at?: string
@@ -199,6 +210,34 @@ export type Database = {
           unit_of_measure?: string | null
           unit_price?: number
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

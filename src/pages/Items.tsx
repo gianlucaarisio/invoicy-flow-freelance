@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,6 +32,7 @@ const getCategoryColor = (category: string) => {
 };
 
 const Items = () => {
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
@@ -49,8 +51,13 @@ const Items = () => {
   }, []);
 
   const fetchItems = async () => {
+    if (!user) return;
     try {
-      const { data, error } = await supabase.from('items').select('*').order('created_at', { ascending: false });
+      const { data, error } = await supabase
+        .from('items')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
       if (error) throw error;
       setItems(data || []);
     } catch (error) {
@@ -63,11 +70,13 @@ const Items = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
+    
     try {
       if (editingItem) {
         await supabase.from('items').update(formData).eq('id', editingItem.id);
       } else {
-        await supabase.from('items').insert([formData]);
+        await supabase.from('items').insert([{ ...formData, user_id: user.id }]);
       }
       fetchItems();
       setIsDialogOpen(false);

@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +27,7 @@ interface Document {
 }
 
 const Documents = () => {
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -38,6 +40,8 @@ const Documents = () => {
 
   // Fetch documents from Supabase
   const fetchDocuments = async () => {
+    if (!user) return;
+    
     try {
       const { data, error } = await supabase
         .from('documents')
@@ -45,6 +49,7 @@ const Documents = () => {
           *,
           clients(name)
         `)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
