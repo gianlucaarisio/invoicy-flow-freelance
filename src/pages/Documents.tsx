@@ -10,6 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Plus, Search, Filter, FileText, Eye, Edit, Trash2, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { DocumentViewDialog } from '@/components/DocumentViewDialog';
+import { DocumentEditDialog } from '@/components/DocumentEditDialog';
 
 interface Document {
   id: string;
@@ -29,6 +31,9 @@ const Documents = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const { toast } = useToast();
 
   // Fetch documents from Supabase
@@ -105,13 +110,13 @@ const Documents = () => {
 
   // Document Actions
   const handleView = (docId: string) => {
-    // Navigate to document view page
-    window.location.href = `/documents/${docId}/view`;
+    setSelectedDocumentId(docId);
+    setViewDialogOpen(true);
   };
 
   const handleEdit = (docId: string) => {
-    // Navigate to document edit page
-    window.location.href = `/documents/${docId}/edit`;
+    setSelectedDocumentId(docId);
+    setEditDialogOpen(true);
   };
 
   const handleDelete = async (docId: string) => {
@@ -350,6 +355,21 @@ const Documents = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* View Dialog */}
+      <DocumentViewDialog
+        documentId={selectedDocumentId}
+        open={viewDialogOpen}
+        onOpenChange={setViewDialogOpen}
+      />
+
+      {/* Edit Dialog */}
+      <DocumentEditDialog
+        documentId={selectedDocumentId}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onDocumentUpdated={fetchDocuments}
+      />
     </div>
   );
 };
