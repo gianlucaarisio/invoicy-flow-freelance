@@ -103,6 +103,17 @@ const Documents = () => {
     return matchesSearch && matchesType && matchesStatus;
   });
 
+  // Document Actions
+  const handleView = (docId: string) => {
+    // Navigate to document view page
+    window.location.href = `/documents/${docId}/view`;
+  };
+
+  const handleEdit = (docId: string) => {
+    // Navigate to document edit page
+    window.location.href = `/documents/${docId}/edit`;
+  };
+
   const handleDelete = async (docId: string) => {
     try {
       const { error } = await supabase
@@ -296,10 +307,10 @@ const Documents = () => {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <Button size="sm" variant="outline">
+                      <Button size="sm" variant="outline" onClick={() => handleView(doc.id)}>
                         <Eye className="h-3 w-3" />
                       </Button>
-                      <Button size="sm" variant="outline">
+                      <Button size="sm" variant="outline" onClick={() => handleEdit(doc.id)}>
                         <Edit className="h-3 w-3" />
                       </Button>
                       <Button size="sm" variant="outline">
