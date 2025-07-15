@@ -5,6 +5,7 @@ import { AppSidebar } from '@/components/layout/AppSidebar';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { LogOut, User } from 'lucide-react';
+import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 
 const AppLayout = () => {
   const { user, logout, isLoading } = useAuth();
@@ -22,22 +23,23 @@ const AppLayout = () => {
   }
 
   return (
-    <div className="min-h-screen flex w-full bg-gray-50">
+    <div className="min-h-screen flex w-full bg-background">
       <AppSidebar />
       
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <header className="h-16 border-b bg-white flex items-center justify-between px-6">
+        <header className="h-16 border-b bg-card flex items-center justify-between px-6">
           <div className="flex items-center gap-4">
             <SidebarTrigger />
-            <h1 className="text-lg font-semibold text-gray-900">Invoice Generator</h1>
+            <h1 className="text-lg font-semibold text-foreground">Invoice Generator</h1>
           </div>
           
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <User className="h-4 w-4" />
               <span>{user.email}</span>
             </div>
+            <ThemeSwitcher />
             <Button variant="outline" size="sm" onClick={logout}>
               <LogOut className="h-4 w-4 mr-2" />
               Logout
