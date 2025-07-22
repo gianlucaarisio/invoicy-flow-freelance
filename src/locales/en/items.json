@@ -1,0 +1,69 @@
+{
+  "title": "Items & Services",
+  "description": "Manage your products and services catalog.",
+  "create": {
+    "title": "Add Item/Service",
+    "description": "Description",
+    "descriptionText": "Add a new item or service to your catalog.",
+    "name": "Name",
+    "unitPrice": "Unit Price",
+    "unit": "Unit"
+  },
+  "edit": {
+    "title": "Edit Item/Service",
+    "description": "Update item information."
+  },
+  "placeholders": {
+    "name": "Enter item/service name",
+    "description": "Enter description",
+    "price": "0.00"
+  },
+  "actions": {
+    "add": "Add Item",
+    "update": "Update Item",
+    "addFirst": "Add Your First Item"
+  },
+  "search": {
+    "placeholder": "Search items and services..."
+  },
+  "stats": {
+    "total": "Total Items",
+    "averagePrice": "Average Price",
+    "highestPriced": "Highest Priced",
+    "unitTypes": "Unit Types"
+  },
+  "units": {
+    "hour": "hour",
+    "day": "day",
+    "piece": "piece",
+    "kg": "kg",
+    "liter": "liter",
+    "meter": "meter",
+    "square_meter": "square meter",
+    "service": "service"
+  },
+  "categories": {
+    "Service": "Service",
+    "Product": "Product",
+    "Consulting": "Consulting",
+    "Maintenance": "Maintenance",
+    "Development": "Development",
+    "Design": "Design"
+  },
+  "empty": {
+    "noItems": "No items or services added yet.",
+    "searchNoResults": "No items found matching your search."
+  },
+  "success": {
+    "title": "Success",
+    "itemSaved": "Item saved successfully",
+    "itemDeleted": "Item deleted successfully"
+  },
+  "error": "Error",
+  "errors": {
+    "fetchFailed": "Failed to fetch items",
+    "saveFailed": "Failed to save item",
+    "deleteFailed": "Failed to delete item"
+  },
+  "na": "N/A"
+}

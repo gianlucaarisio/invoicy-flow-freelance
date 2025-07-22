@@ -1,0 +1,69 @@
+{
+  "title": "Articoli e Servizi",
+  "description": "Gestisci il tuo catalogo di prodotti e servizi.",
+  "create": {
+    "title": "Aggiungi Articolo/Servizio",
+    "description": "Descrizione",
+    "descriptionText": "Aggiungi un nuovo articolo o servizio al tuo catalogo.",
+    "name": "Nome",
+    "unitPrice": "Prezzo Unitario",
+    "unit": "Unità"
+  },
+  "edit": {
+    "title": "Modifica Articolo/Servizio",
+    "description": "Aggiorna le informazioni dell'articolo."
+  },
+  "placeholders": {
+    "name": "Inserisci il nome dell'articolo/servizio",
+    "description": "Inserisci la descrizione",
+    "price": "0,00"
+  },
+  "actions": {
+    "add": "Aggiungi Articolo",
+    "update": "Aggiorna Articolo",
+    "addFirst": "Aggiungi il Tuo Primo Articolo"
+  },
+  "search": {
+    "placeholder": "Cerca articoli e servizi..."
+  },
+  "stats": {
+    "total": "Articoli Totali",
+    "averagePrice": "Prezzo Medio",
+    "highestPriced": "Prezzo Più Alto",
+    "unitTypes": "Tipi di Unità"
+  },
+  "units": {
+    "hour": "ora",
+    "day": "giorno",
+    "piece": "pezzo",
+    "kg": "kg",
+    "liter": "litro",
+    "meter": "metro",
+    "square_meter": "metro quadrato",
+    "service": "servizio"
+  },
+  "categories": {
+    "Service": "Servizio",
+    "Product": "Prodotto",
+    "Consulting": "Consulenza",
+    "Maintenance": "Manutenzione",
+    "Development": "Sviluppo",
+    "Design": "Design"
+  },
+  "empty": {
+    "noItems": "Nessun articolo o servizio aggiunto.",
+    "searchNoResults": "Nessun articolo trovato per la tua ricerca."
+  },
+  "success": {
+    "title": "Successo",
+    "itemSaved": "Articolo salvato con successo",
+    "itemDeleted": "Articolo eliminato con successo"
+  },
+  "error": "Errore",
+  "errors": {
+    "fetchFailed": "Impossibile recuperare gli articoli",
+    "saveFailed": "Impossibile salvare l'articolo",
+    "deleteFailed": "Impossibile eliminare l'articolo"
+  },
+  "na": "N/D"
+}

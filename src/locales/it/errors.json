@@ -1,0 +1,30 @@
+{
+  "general": {
+    "somethingWentWrong": "Qualcosa è andato storto",
+    "tryAgain": "Riprova",
+    "contactSupport": "Contatta il supporto"
+  },
+  "network": {
+    "connectionError": "Errore di connessione",
+    "timeout": "Timeout della richiesta",
+    "serverError": "Errore del server"
+  },
+  "validation": {
+    "invalidData": "Dati non validi",
+    "missingFields": "Campi obbligatori mancanti",
+    "formErrors": "Correggi gli errori nel modulo",
+    "invalidCredentials": "Email o password non validi",
+    "emailInUse": "Questa email è già in uso",
+    "weakPassword": "La password è troppo debole",
+    "invalidInput": "Input non valido"
+  },
+  "auth": {
+    "unauthorized": "Non autorizzato",
+    "sessionExpired": "Sessione scaduta",
+    "accessDenied": "Accesso negato"
+  },
+  "notFound": {
+    "page": "Pagina non trovata",
+    "resource": "Risorsa non trovata"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "title": "Dashboard",
+  "welcome": "Benvenuto! Ecco cosa sta succedendo con la tua attività.",
+  "newDocument": "Nuovo Documento",
+  "totalClients": "Clienti Totali",
+  "itemsServices": "Articoli e Servizi",
+  "totalDocuments": "Documenti Totali",
+  "revenueThisMonth": "Ricavi di Questo Mese",
+  "fromLastMonth": "dal mese scorso",
+  "quickActions": "Azioni Rapide",
+  "quickActionsDesc": "Accedi rapidamente alle funzioni più utilizzate",
+  "createNewDocument": "Crea Nuovo Documento",
+  "manageClients": "Gestisci Clienti",
+  "addItemsServices": "Aggiungi Articoli/Servizi",
+  "recentDocuments": "Documenti Recenti",
+  "recentDocumentsDesc": "I tuoi documenti più recenti",
+  "noDocuments": "Nessun documento trovato",
+  "unknownClient": "Cliente Sconosciuto",
+  "viewAllDocuments": "Visualizza Tutti i Documenti",
+  "pendingInvoices": "Fatture in Sospeso",
+  "awaitingPayment": "In attesa di pagamento",
+  "overdueInvoices": "Fatture Scadute",
+  "needAttention": "Richiedono attenzione",
+  "paidThisMonth": "Pagate Questo Mese",
+  "invoicesCompleted": "fatture completate",
+  "documentTypes": {
+    "Invoice": "Fattura",
+    "Quote": "Preventivo"
+  },
+  "documentStatuses": {
+    "Paid": "Pagata",
+    "Pending": "In Sospeso",
+    "Overdue": "Scaduta",
+    "Draft": "Bozza",
+    "Issued": "Emessa",
+    "Accepted": "Accettata",
+    "Rejected": "Rifiutata"
+  }
+}

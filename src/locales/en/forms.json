@@ -1,0 +1,29 @@
+{
+  "validation": {
+    "required": "This field is required",
+    "email": "Please enter a valid email address",
+    "minLength": "Must be at least {{count}} characters",
+    "maxLength": "Cannot exceed {{count}} characters",
+    "numeric": "Must be a number",
+    "positive": "Must be a positive number",
+    "phone": "Please enter a valid phone number",
+    "taxCode": "Please enter a valid tax code",
+    "vatNumber": "Please enter a valid VAT number",
+    "string": "Must be text",
+    "date": "Please enter a valid date",
+    "url": "Please enter a valid URL",
+    "passwordTooShort": "Password must be at least {{count}} characters",
+    "passwordMismatch": "Passwords do not match",
+    "invalidFormat": "Invalid format",
+    "invalidValue": "Invalid value"
+  },
+  "placeholders": {
+    "enterName": "Enter name",
+    "enterEmail": "Enter email",
+    "enterPhone": "Enter phone",
+    "enterAddress": "Enter address",
+    "enterDescription": "Enter description",
+    "selectOption": "Select an option",
+    "search": "Search..."
+  }
+}

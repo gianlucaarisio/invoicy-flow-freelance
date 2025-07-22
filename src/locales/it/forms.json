@@ -1,0 +1,29 @@
+{
+  "validation": {
+    "required": "Questo campo è obbligatorio",
+    "email": "Inserisci un indirizzo email valido",
+    "minLength": "Deve contenere almeno {{count}} caratteri",
+    "maxLength": "Non può superare {{count}} caratteri",
+    "numeric": "Deve essere un numero",
+    "positive": "Deve essere un numero positivo",
+    "phone": "Inserisci un numero di telefono valido",
+    "taxCode": "Inserisci un codice fiscale valido",
+    "vatNumber": "Inserisci una partita IVA valida",
+    "string": "Deve essere testo",
+    "date": "Inserisci una data valida",
+    "url": "Inserisci un URL valido",
+    "passwordTooShort": "La password deve contenere almeno {{count}} caratteri",
+    "passwordMismatch": "Le password non corrispondono",
+    "invalidFormat": "Formato non valido",
+    "invalidValue": "Valore non valido"
+  },
+  "placeholders": {
+    "enterName": "Inserisci il nome",
+    "enterEmail": "Inserisci l'email",
+    "enterPhone": "Inserisci il telefono",
+    "enterAddress": "Inserisci l'indirizzo",
+    "enterDescription": "Inserisci la descrizione",
+    "selectOption": "Seleziona un'opzione",
+    "search": "Cerca..."
+  }
+}

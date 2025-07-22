@@ -1,14 +1,15 @@
-
-import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { AppSidebar } from '@/components/layout/AppSidebar';
-import { SidebarTrigger } from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button';
-import { LogOut, User } from 'lucide-react';
-import { ThemeSwitcher } from '@/components/ThemeSwitcher';
+import { Navigate, Outlet } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { AppSidebar } from "@/components/layout/AppSidebar";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import { LogOut, User } from "lucide-react";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const AppLayout = () => {
   const { user, logout, isLoading } = useAuth();
+  const { t } = useTranslation("common");
 
   if (isLoading) {
     return (
@@ -25,15 +26,17 @@ const AppLayout = () => {
   return (
     <div className="min-h-screen flex w-full bg-background">
       <AppSidebar />
-      
+
       <div className="flex-1 flex flex-col">
         {/* Header */}
         <header className="h-16 border-b bg-card flex items-center justify-between px-6">
           <div className="flex items-center gap-4">
             <SidebarTrigger />
-            <h1 className="text-lg font-semibold text-foreground">Invoice Generator</h1>
+            <h1 className="text-lg font-semibold text-foreground">
+              Invoice Generator
+            </h1>
           </div>
-          
+
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <User className="h-4 w-4" />
@@ -42,7 +45,7 @@ const AppLayout = () => {
             <ThemeSwitcher />
             <Button variant="outline" size="sm" onClick={logout}>
               <LogOut className="h-4 w-4 mr-2" />
-              Logout
+              {t("navigation.logout")}
             </Button>
           </div>
         </header>

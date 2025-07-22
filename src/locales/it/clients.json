@@ -1,0 +1,72 @@
+{
+  "title": "Clienti",
+  "description": "Gestisci le informazioni e i contatti dei tuoi clienti.",
+  "create": {
+    "title": "Aggiungi Cliente",
+    "description": "Aggiungi un nuovo cliente al tuo sistema.",
+    "name": "Nome Azienda/Cliente",
+    "email": "Email",
+    "phone": "Telefono",
+    "address": "Indirizzo",
+    "taxCode": "Codice Fiscale",
+    "vatNumber": "Partita IVA"
+  },
+  "edit": {
+    "title": "Modifica Cliente",
+    "description": "Aggiorna le informazioni del cliente."
+  },
+  "placeholders": {
+    "name": "Inserisci il nome del cliente",
+    "email": "Inserisci l'indirizzo email",
+    "phone": "Inserisci il numero di telefono",
+    "address": "Inserisci l'indirizzo completo"
+  },
+  "actions": {
+    "add": "Aggiungi Cliente",
+    "update": "Aggiorna Cliente",
+    "addFirst": "Aggiungi il Tuo Primo Cliente"
+  },
+  "search": {
+    "placeholder": "Cerca clienti..."
+  },
+  "stats": {
+    "total": "Clienti Totali",
+    "withEmail": "Con Email",
+    "withPhone": "Con Telefono"
+  },
+  "dates": {
+    "added": "Aggiunto",
+    "updated": "Aggiornato"
+  },
+  "empty": {
+    "noClients": "Nessun cliente aggiunto.",
+    "searchNoResults": "Nessun cliente trovato per la tua ricerca."
+  },
+  "success": {
+    "clientSaved": "Cliente salvato con successo",
+    "clientDeleted": "Cliente eliminato con successo"
+  },
+  "error": "Errore",
+  "errors": {
+    "fetchFailed": "Impossibile recuperare i clienti",
+    "saveFailed": "Impossibile salvare il cliente",
+    "deleteFailed": "Impossibile eliminare il cliente"
+  },
+  "list": {
+    "name": "Nome",
+    "email": "Email",
+    "phone": "Telefono",
+    "actions": "Azioni",
+    "noClients": "Nessun cliente trovato"
+  },
+  "view": {
+    "title": "Dettagli Cliente",
+    "contactInfo": "Informazioni di Contatto",
+    "taxInfo": "Informazioni Fiscali"
+  },
+  "delete": {
+    "title": "Elimina Cliente",
+    "confirmation": "Sei sicuro di voler eliminare questo cliente?",
+    "warning": "Questa azione eliminerà anche tutti i documenti associati."
+  }
+}

@@ -1,20 +1,27 @@
-
-import { useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Receipt, Mail, Lock } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useState } from "react";
+import { Link, Navigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Receipt, Mail, Lock } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const LoginPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { user, login } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation("auth");
 
   if (user) {
     return <Navigate to="/" replace />;
@@ -26,24 +33,24 @@ const LoginPage = () => {
 
     try {
       const { error } = await login(email, password);
-      
+
       if (error) {
         toast({
-          title: 'Login failed',
+          title: t("errors.loginFailed"),
           description: error,
-          variant: 'destructive',
+          variant: "destructive",
         });
       } else {
         toast({
-          title: 'Welcome back!',
-          description: 'You have successfully logged in.',
+          title: t("success.welcomeBack"),
+          description: t("success.loginSuccessDescription"),
         });
       }
     } catch (error) {
       toast({
-        title: 'Login failed',
-        description: 'An unexpected error occurred.',
-        variant: 'destructive',
+        title: t("errors.loginFailed"),
+        description: t("errors.unexpectedError"),
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -59,19 +66,19 @@ const LoginPage = () => {
               <Receipt className="h-8 w-8 text-white" />
             </div>
           </div>
-          <CardTitle className="text-2xl">Welcome back</CardTitle>
-          <CardDescription>Sign in to your account to continue</CardDescription>
+          <CardTitle className="text-2xl">{t("login.title")}</CardTitle>
+          <CardDescription>{t("login.subtitle")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("login.email")}</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder={t("login.emailPlaceholder")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-10"
@@ -80,13 +87,13 @@ const LoginPage = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("login.password")}</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Enter your password"
+                  placeholder={t("login.passwordPlaceholder")}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-10"
@@ -95,13 +102,13 @@ const LoginPage = () => {
               </div>
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Signing in...' : 'Sign in'}
+              {isLoading ? t("login.signingIn") : t("login.loginButton")}
             </Button>
           </form>
           <div className="mt-6 text-center text-sm">
-            Don't have an account?{' '}
+            {t("login.noAccount")}{" "}
             <Link to="/register" className="text-primary hover:underline">
-              Sign up
+              {t("login.signUp")}
             </Link>
           </div>
         </CardContent>

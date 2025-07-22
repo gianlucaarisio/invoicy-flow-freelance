@@ -1,21 +1,28 @@
-
-import { useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Receipt, Mail, Lock, User } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useState } from "react";
+import { Link, Navigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Receipt, Mail, Lock, User } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const RegisterPage = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { user, register } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation("auth");
 
   if (user) {
     return <Navigate to="/" replace />;
@@ -27,24 +34,24 @@ const RegisterPage = () => {
 
     try {
       const { error } = await register(name, email, password);
-      
+
       if (error) {
         toast({
-          title: 'Registration failed',
+          title: t("errors.registrationFailed"),
           description: error,
-          variant: 'destructive',
+          variant: "destructive",
         });
       } else {
         toast({
-          title: 'Account created!',
-          description: 'Please check your email to confirm your account.',
+          title: t("success.accountCreated"),
+          description: t("success.checkEmailConfirmation"),
         });
       }
     } catch (error) {
       toast({
-        title: 'Registration failed',
-        description: 'An unexpected error occurred.',
-        variant: 'destructive',
+        title: t("errors.registrationFailed"),
+        description: t("errors.unexpectedError"),
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -60,19 +67,19 @@ const RegisterPage = () => {
               <Receipt className="h-8 w-8 text-white" />
             </div>
           </div>
-          <CardTitle className="text-2xl">Create an account</CardTitle>
-          <CardDescription>Get started with Invoice Generator</CardDescription>
+          <CardTitle className="text-2xl">{t("register.title")}</CardTitle>
+          <CardDescription>{t("register.subtitle")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
+              <Label htmlFor="name">{t("register.fullName")}</Label>
               <div className="relative">
                 <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
                   id="name"
                   type="text"
-                  placeholder="Enter your full name"
+                  placeholder={t("register.fullNamePlaceholder")}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="pl-10"
@@ -81,13 +88,13 @@ const RegisterPage = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("register.email")}</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder={t("register.emailPlaceholder")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-10"
@@ -96,13 +103,13 @@ const RegisterPage = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("register.password")}</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Create a password"
+                  placeholder={t("register.passwordPlaceholder")}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-10"
@@ -111,13 +118,15 @@ const RegisterPage = () => {
               </div>
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Creating account...' : 'Create account'}
+              {isLoading
+                ? t("register.creatingAccount")
+                : t("register.registerButton")}
             </Button>
           </form>
           <div className="mt-6 text-center text-sm">
-            Already have an account?{' '}
+            {t("register.hasAccount")}{" "}
             <Link to="/login" className="text-primary hover:underline">
-              Sign in
+              {t("register.signIn")}
             </Link>
           </div>
         </CardContent>

@@ -1,0 +1,39 @@
+{
+  "title": "Dashboard",
+  "welcome": "Welcome! Here's what's happening with your business.",
+  "newDocument": "New Document",
+  "totalClients": "Total Clients",
+  "itemsServices": "Items & Services",
+  "totalDocuments": "Total Documents",
+  "revenueThisMonth": "Revenue This Month",
+  "fromLastMonth": "from last month",
+  "quickActions": "Quick Actions",
+  "quickActionsDesc": "Quickly access your most used features",
+  "createNewDocument": "Create New Document",
+  "manageClients": "Manage Clients",
+  "addItemsServices": "Add Items/Services",
+  "recentDocuments": "Recent Documents",
+  "recentDocumentsDesc": "Your most recent documents",
+  "noDocuments": "No documents found",
+  "unknownClient": "Unknown Client",
+  "viewAllDocuments": "View All Documents",
+  "pendingInvoices": "Pending Invoices",
+  "awaitingPayment": "Awaiting payment",
+  "overdueInvoices": "Overdue Invoices",
+  "needAttention": "Need attention",
+  "paidThisMonth": "Paid This Month",
+  "invoicesCompleted": "invoices completed",
+  "documentTypes": {
+    "Invoice": "Invoice",
+    "Quote": "Quote"
+  },
+  "documentStatuses": {
+    "Paid": "Paid",
+    "Pending": "Pending",
+    "Overdue": "Overdue",
+    "Draft": "Draft",
+    "Issued": "Issued",
+    "Accepted": "Accepted",
+    "Rejected": "Rejected"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "general": {
+    "somethingWentWrong": "Something went wrong",
+    "tryAgain": "Try again",
+    "contactSupport": "Contact support"
+  },
+  "network": {
+    "connectionError": "Connection error",
+    "timeout": "Request timeout",
+    "serverError": "Server error"
+  },
+  "validation": {
+    "invalidData": "Invalid data",
+    "missingFields": "Required fields missing",
+    "formErrors": "Please correct the errors in the form",
+    "invalidCredentials": "Invalid email or password",
+    "emailInUse": "This email is already in use",
+    "weakPassword": "Password is too weak",
+    "invalidInput": "Invalid input provided"
+  },
+  "auth": {
+    "unauthorized": "Unauthorized",
+    "sessionExpired": "Session expired",
+    "accessDenied": "Access denied"
+  },
+  "notFound": {
+    "page": "Page not found",
+    "resource": "Resource not found"
+  }
+}

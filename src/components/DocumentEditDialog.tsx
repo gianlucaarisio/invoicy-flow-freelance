@@ -1,16 +1,29 @@
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Plus, Trash2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Plus, Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "@/hooks/useTranslation";
+import { supabase } from "@/integrations/supabase/client";
 
 interface DocumentDetails {
   id: string;
@@ -43,10 +56,16 @@ interface DocumentEditDialogProps {
   onDocumentUpdated: () => void;
 }
 
-export const DocumentEditDialog = ({ documentId, open, onOpenChange, onDocumentUpdated }: DocumentEditDialogProps) => {
+export const DocumentEditDialog = ({
+  documentId,
+  open,
+  onOpenChange,
+  onDocumentUpdated,
+}: DocumentEditDialogProps) => {
   const { user } = useAuth();
+  const { t, formatCurrency } = useTranslation("documents");
   const [document, setDocument] = useState<DocumentDetails | null>(null);
-  const [clients, setClients] = useState<{id: string, name: string}[]>([]);
+  const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
@@ -63,14 +82,14 @@ export const DocumentEditDialog = ({ documentId, open, onOpenChange, onDocumentU
   const fetchClients = async () => {
     try {
       const { data, error } = await supabase
-        .from('clients')
-        .select('id, name')
-        .order('name');
+        .from("clients")
+        .select("id, name")
+        .order("name");
 
       if (error) throw error;
       setClients(data || []);
     } catch (error) {
-      console.error('Error fetching clients:', error);
+      console.error("Error fetching clients:", error);
     }
   };
 
@@ -78,20 +97,22 @@ export const DocumentEditDialog = ({ documentId, open, onOpenChange, onDocumentU
     setLoading(true);
     try {
       const { data: docData, error: docError } = await supabase
-        .from('documents')
-        .select(`
+        .from("documents")
+        .select(
+          `
           *,
           clients(name)
-        `)
-        .eq('id', id)
+        `
+        )
+        .eq("id", id)
         .single();
 
       if (docError) throw docError;
 
       const { data: lineItems, error: lineError } = await supabase
-        .from('document_line_items')
-        .select('*')
-        .eq('document_id', id);
+        .from("document_line_items")
+        .select("*")
+        .eq("document_id", id);
 
       if (lineError) throw lineError;
 
@@ -100,7 +121,7 @@ export const DocumentEditDialog = ({ documentId, open, onOpenChange, onDocumentU
         type: docData.type,
         number: docData.number,
         client_id: docData.client_id,
-        client_name: docData.clients?.name || 'Unknown Client',
+        client_name: docData.clients?.name || "Unknown Client",
         issue_date: docData.issue_date,
         due_date: docData.due_date,
         status: docData.status,
@@ -109,17 +130,18 @@ export const DocumentEditDialog = ({ documentId, open, onOpenChange, onDocumentU
         vat_amount: parseFloat(docData.vat_amount.toString()),
         total_amount: parseFloat(docData.total_amount.toString()),
         notes: docData.notes,
-        line_items: lineItems?.map(item => ({
-          id: item.id,
-          item_name: item.item_name,
-          description: item.description,
-          quantity: parseFloat(item.quantity.toString()),
-          unit_price: parseFloat(item.unit_price.toString()),
-          line_total: parseFloat(item.line_total.toString())
-        })) || []
+        line_items:
+          lineItems?.map((item) => ({
+            id: item.id,
+            item_name: item.item_name,
+            description: item.description,
+            quantity: parseFloat(item.quantity.toString()),
+            unit_price: parseFloat(item.unit_price.toString()),
+            line_total: parseFloat(item.line_total.toString()),
+          })) || [],
       });
     } catch (error) {
-      console.error('Error fetching document details:', error);
+      console.error("Error fetching document details:", error);
     } finally {
       setLoading(false);
     }
@@ -127,90 +149,93 @@ export const DocumentEditDialog = ({ documentId, open, onOpenChange, onDocumentU
 
   const calculateTotals = (lineItems: typeof document.line_items) => {
     const subtotal = lineItems.reduce((sum, item) => sum + item.line_total, 0);
-    const vatAmount = subtotal * (document?.vat_percentage || 0) / 100;
+    const vatAmount = (subtotal * (document?.vat_percentage || 0)) / 100;
     const totalAmount = subtotal + vatAmount;
-    
+
     return { subtotal, vatAmount, totalAmount };
   };
 
   const updateLineItem = (index: number, field: string, value: any) => {
     if (!document) return;
-    
+
     const updatedItems = [...document.line_items];
     updatedItems[index] = { ...updatedItems[index], [field]: value };
-    
+
     // Recalculate line total
-    if (field === 'quantity' || field === 'unit_price') {
-      updatedItems[index].line_total = updatedItems[index].quantity * updatedItems[index].unit_price;
+    if (field === "quantity" || field === "unit_price") {
+      updatedItems[index].line_total =
+        updatedItems[index].quantity * updatedItems[index].unit_price;
     }
-    
+
     const { subtotal, vatAmount, totalAmount } = calculateTotals(updatedItems);
-    
+
     setDocument({
       ...document,
       line_items: updatedItems,
       subtotal,
       vat_amount: vatAmount,
-      total_amount: totalAmount
+      total_amount: totalAmount,
     });
   };
 
   const addLineItem = () => {
     if (!document) return;
-    
+
     const newItem = {
       id: `temp-${Date.now()}`,
-      item_name: '',
-      description: '',
+      item_name: "",
+      description: "",
       quantity: 1,
       unit_price: 0,
-      line_total: 0
+      line_total: 0,
     };
-    
+
     setDocument({
       ...document,
-      line_items: [...document.line_items, newItem]
+      line_items: [...document.line_items, newItem],
     });
   };
 
   const removeLineItem = (index: number) => {
     if (!document) return;
-    
+
     const updatedItems = document.line_items.filter((_, i) => i !== index);
     const { subtotal, vatAmount, totalAmount } = calculateTotals(updatedItems);
-    
+
     setDocument({
       ...document,
       line_items: updatedItems,
       subtotal,
       vat_amount: vatAmount,
-      total_amount: totalAmount
+      total_amount: totalAmount,
     });
   };
 
   const updateVatPercentage = (vatPercentage: number) => {
     if (!document) return;
-    
-    const { subtotal, vatAmount, totalAmount } = calculateTotals(document.line_items);
-    const newVatAmount = subtotal * vatPercentage / 100;
+
+    const { subtotal, vatAmount, totalAmount } = calculateTotals(
+      document.line_items
+    );
+    const newVatAmount = (subtotal * vatPercentage) / 100;
     const newTotalAmount = subtotal + newVatAmount;
-    
+
     setDocument({
       ...document,
       vat_percentage: vatPercentage,
       vat_amount: newVatAmount,
-      total_amount: newTotalAmount
+      total_amount: newTotalAmount,
     });
   };
 
   const handleSave = async () => {
     if (!document) return;
-    
+
     setSaving(true);
     try {
       // Update document
       const { error: docError } = await supabase
-        .from('documents')
+        .from("documents")
         .update({
           client_id: document.client_id,
           issue_date: document.issue_date,
@@ -220,52 +245,52 @@ export const DocumentEditDialog = ({ documentId, open, onOpenChange, onDocumentU
           vat_percentage: document.vat_percentage,
           vat_amount: document.vat_amount,
           total_amount: document.total_amount,
-          notes: document.notes || null
+          notes: document.notes || null,
         })
-        .eq('id', document.id);
+        .eq("id", document.id);
 
       if (docError) throw docError;
 
       // Delete existing line items and insert new ones
       const { error: deleteError } = await supabase
-        .from('document_line_items')
+        .from("document_line_items")
         .delete()
-        .eq('document_id', document.id);
+        .eq("document_id", document.id);
 
       if (deleteError) throw deleteError;
 
       // Insert new line items
-      const lineItemsToInsert = document.line_items.map(item => ({
+      const lineItemsToInsert = document.line_items.map((item) => ({
         document_id: document.id,
         item_name: item.item_name,
         description: item.description || null,
         quantity: item.quantity,
         unit_price: item.unit_price,
         line_total: item.line_total,
-        user_id: user?.id || ''
+        user_id: user?.id || "",
       }));
 
       if (lineItemsToInsert.length > 0) {
         const { error: insertError } = await supabase
-          .from('document_line_items')
+          .from("document_line_items")
           .insert(lineItemsToInsert);
 
         if (insertError) throw insertError;
       }
 
       toast({
-        title: 'Success',
-        description: 'Document updated successfully.'
+        title: t("edit.success"),
+        description: t("edit.successDescription"),
       });
 
       onDocumentUpdated();
       onOpenChange(false);
     } catch (error) {
-      console.error('Error updating document:', error);
+      console.error("Error updating document:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to update document.',
-        variant: 'destructive'
+        title: t("edit.error"),
+        description: t("edit.errorDescription"),
+        variant: "destructive",
       });
     } finally {
       setSaving(false);
@@ -279,30 +304,32 @@ export const DocumentEditDialog = ({ documentId, open, onOpenChange, onDocumentU
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
-            <span>Edit Document</span>
+            <span>{t("edit.title")}</span>
             <Badge variant="secondary">{document?.type}</Badge>
           </DialogTitle>
         </DialogHeader>
 
         {loading ? (
           <div className="flex items-center justify-center h-32">
-            <div className="text-lg">Loading document details...</div>
+            <div className="text-lg">{t("edit.loading")}</div>
           </div>
         ) : document ? (
           <div className="space-y-6">
             {/* Document Details */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="client">Client</Label>
-                <Select 
-                  value={document.client_id} 
-                  onValueChange={(value) => setDocument({...document, client_id: value})}
+                <Label htmlFor="client">{t("edit.client")}</Label>
+                <Select
+                  value={document.client_id}
+                  onValueChange={(value) =>
+                    setDocument({ ...document, client_id: value })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {clients.map(client => (
+                    {clients.map((client) => (
                       <SelectItem key={client.id} value={client.id}>
                         {client.name}
                       </SelectItem>
@@ -311,21 +338,31 @@ export const DocumentEditDialog = ({ documentId, open, onOpenChange, onDocumentU
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Select 
-                  value={document.status} 
-                  onValueChange={(value) => setDocument({...document, status: value})}
+                <Label htmlFor="status">{t("edit.status")}</Label>
+                <Select
+                  value={document.status}
+                  onValueChange={(value) =>
+                    setDocument({ ...document, status: value })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Draft">Draft</SelectItem>
-                    <SelectItem value="Issued">Issued</SelectItem>
-                    <SelectItem value="Accepted">Accepted</SelectItem>
-                    <SelectItem value="Rejected">Rejected</SelectItem>
-                    <SelectItem value="Paid">Paid</SelectItem>
-                    <SelectItem value="Overdue">Overdue</SelectItem>
+                    <SelectItem value="Draft">{t("statuses.draft")}</SelectItem>
+                    <SelectItem value="Issued">
+                      {t("statuses.issued")}
+                    </SelectItem>
+                    <SelectItem value="Accepted">
+                      {t("statuses.accepted")}
+                    </SelectItem>
+                    <SelectItem value="Rejected">
+                      {t("statuses.rejected")}
+                    </SelectItem>
+                    <SelectItem value="Paid">{t("statuses.paid")}</SelectItem>
+                    <SelectItem value="Overdue">
+                      {t("statuses.overdue")}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -333,27 +370,35 @@ export const DocumentEditDialog = ({ documentId, open, onOpenChange, onDocumentU
 
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="issue_date">Issue Date</Label>
+                <Label htmlFor="issue_date">{t("edit.issueDate")}</Label>
                 <Input
                   type="date"
                   value={document.issue_date}
-                  onChange={(e) => setDocument({...document, issue_date: e.target.value})}
+                  onChange={(e) =>
+                    setDocument({ ...document, issue_date: e.target.value })
+                  }
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="due_date">Due Date</Label>
+                <Label htmlFor="due_date">{t("edit.dueDate")}</Label>
                 <Input
                   type="date"
-                  value={document.due_date || ''}
-                  onChange={(e) => setDocument({...document, due_date: e.target.value})}
+                  value={document.due_date || ""}
+                  onChange={(e) =>
+                    setDocument({ ...document, due_date: e.target.value })
+                  }
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="vat_percentage">VAT Percentage</Label>
+                <Label htmlFor="vat_percentage">
+                  {t("edit.vatPercentage")}
+                </Label>
                 <Input
                   type="number"
                   value={document.vat_percentage}
-                  onChange={(e) => updateVatPercentage(parseFloat(e.target.value) || 0)}
+                  onChange={(e) =>
+                    updateVatPercentage(parseFloat(e.target.value) || 0)
+                  }
                   min="0"
                   max="100"
                   step="0.1"
@@ -366,56 +411,75 @@ export const DocumentEditDialog = ({ documentId, open, onOpenChange, onDocumentU
             {/* Line Items */}
             <div>
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold">Line Items</h3>
+                <h3 className="text-lg font-semibold">{t("edit.lineItems")}</h3>
                 <Button onClick={addLineItem} size="sm">
                   <Plus className="h-4 w-4 mr-2" />
-                  Add Item
+                  {t("edit.addItem")}
                 </Button>
               </div>
 
               <div className="space-y-2">
                 {document.line_items.map((item, index) => (
-                  <div key={item.id || index} className="grid grid-cols-12 gap-2 items-end p-3 border rounded">
+                  <div
+                    key={item.id || index}
+                    className="grid grid-cols-12 gap-2 items-end p-3 border rounded"
+                  >
                     <div className="col-span-3">
-                      <Label className="text-xs">Item Name</Label>
+                      <Label className="text-xs">{t("edit.itemName")}</Label>
                       <Input
                         value={item.item_name}
-                        onChange={(e) => updateLineItem(index, 'item_name', e.target.value)}
-                        placeholder="Item name"
+                        onChange={(e) =>
+                          updateLineItem(index, "item_name", e.target.value)
+                        }
+                        placeholder={t("edit.itemNamePlaceholder")}
                       />
                     </div>
                     <div className="col-span-3">
-                      <Label className="text-xs">Description</Label>
+                      <Label className="text-xs">{t("edit.description")}</Label>
                       <Input
-                        value={item.description || ''}
-                        onChange={(e) => updateLineItem(index, 'description', e.target.value)}
-                        placeholder="Description"
+                        value={item.description || ""}
+                        onChange={(e) =>
+                          updateLineItem(index, "description", e.target.value)
+                        }
+                        placeholder={t("edit.descriptionPlaceholder")}
                       />
                     </div>
                     <div className="col-span-2">
-                      <Label className="text-xs">Quantity</Label>
+                      <Label className="text-xs">{t("edit.quantity")}</Label>
                       <Input
                         type="number"
                         value={item.quantity}
-                        onChange={(e) => updateLineItem(index, 'quantity', parseFloat(e.target.value) || 0)}
+                        onChange={(e) =>
+                          updateLineItem(
+                            index,
+                            "quantity",
+                            parseFloat(e.target.value) || 0
+                          )
+                        }
                         min="0"
                         step="0.1"
                       />
                     </div>
                     <div className="col-span-2">
-                      <Label className="text-xs">Unit Price</Label>
+                      <Label className="text-xs">{t("edit.unitPrice")}</Label>
                       <Input
                         type="number"
                         value={item.unit_price}
-                        onChange={(e) => updateLineItem(index, 'unit_price', parseFloat(e.target.value) || 0)}
+                        onChange={(e) =>
+                          updateLineItem(
+                            index,
+                            "unit_price",
+                            parseFloat(e.target.value) || 0
+                          )
+                        }
                         min="0"
                         step="0.01"
                       />
                     </div>
                     <div className="col-span-1">
-                      <Label className="text-xs">Total</Label>
+                      <Label className="text-xs">{t("edit.total")}</Label>
                       <div className="text-sm font-medium p-2 bg-muted rounded">
-                        ${item.line_total.toFixed(2)}
+                        {formatCurrency(item.line_total)}
                       </div>
                     </div>
                     <div className="col-span-1">
@@ -438,29 +502,33 @@ export const DocumentEditDialog = ({ documentId, open, onOpenChange, onDocumentU
             {/* Totals */}
             <div className="space-y-2 max-w-sm ml-auto">
               <div className="flex justify-between">
-                <span>Subtotal:</span>
-                <span>${document.subtotal.toFixed(2)}</span>
+                <span>{t("edit.subtotal")}:</span>
+                <span>{formatCurrency(document.subtotal)}</span>
               </div>
               {document.vat_percentage > 0 && (
                 <div className="flex justify-between">
-                  <span>VAT ({document.vat_percentage}%):</span>
-                  <span>${document.vat_amount.toFixed(2)}</span>
+                  <span>
+                    {t("edit.vat")} ({document.vat_percentage}%):
+                  </span>
+                  <span>{formatCurrency(document.vat_amount)}</span>
                 </div>
               )}
               <Separator />
               <div className="flex justify-between text-lg font-bold">
-                <span>Total:</span>
-                <span>${document.total_amount.toFixed(2)}</span>
+                <span>{t("edit.totalAmount")}:</span>
+                <span>{formatCurrency(document.total_amount)}</span>
               </div>
             </div>
 
             {/* Notes */}
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
+              <Label htmlFor="notes">{t("edit.notes")}</Label>
               <Textarea
-                value={document.notes || ''}
-                onChange={(e) => setDocument({...document, notes: e.target.value})}
-                placeholder="Additional notes..."
+                value={document.notes || ""}
+                onChange={(e) =>
+                  setDocument({ ...document, notes: e.target.value })
+                }
+                placeholder={t("edit.notesPlaceholder")}
                 rows={3}
               />
             </div>
@@ -469,10 +537,10 @@ export const DocumentEditDialog = ({ documentId, open, onOpenChange, onDocumentU
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t("edit.cancel")}
           </Button>
           <Button onClick={handleSave} disabled={saving}>
-            {saving ? 'Saving...' : 'Save Changes'}
+            {saving ? t("edit.saving") : t("edit.save")}
           </Button>
         </DialogFooter>
       </DialogContent>

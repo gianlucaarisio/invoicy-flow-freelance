@@ -1,11 +1,17 @@
-
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import useTranslation from "@/hooks/useTranslation";
 
 interface ConnectionTest {
   id: string;
@@ -15,52 +21,53 @@ interface ConnectionTest {
 
 export default function SupabaseTest() {
   const [data, setData] = useState<ConnectionTest[]>([]);
-  const [newField, setNewField] = useState('');
+  const [newField, setNewField] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { formatDate } = useTranslation("common");
 
   const fetchData = async () => {
     try {
       const { data: result, error } = await supabase
-        .from('connection_test')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .from("connection_test")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       setData(result || []);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error("Error fetching data:", error);
       toast({
         title: "Error",
         description: "Failed to fetch data from Supabase",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
 
   const addRecord = async () => {
     if (!newField.trim()) return;
-    
+
     setLoading(true);
     try {
       const { error } = await supabase
-        .from('connection_test')
+        .from("connection_test")
         .insert([{ test_field: newField }]);
 
       if (error) throw error;
-      
-      setNewField('');
+
+      setNewField("");
       fetchData();
       toast({
         title: "Success",
-        description: "Record added successfully!"
+        description: "Record added successfully!",
       });
     } catch (error) {
-      console.error('Error adding record:', error);
+      console.error("Error adding record:", error);
       toast({
         title: "Error",
         description: "Failed to add record",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -70,23 +77,23 @@ export default function SupabaseTest() {
   const deleteRecord = async (id: string) => {
     try {
       const { error } = await supabase
-        .from('connection_test')
+        .from("connection_test")
         .delete()
-        .eq('id', id);
+        .eq("id", id);
 
       if (error) throw error;
-      
+
       fetchData();
       toast({
         title: "Success",
-        description: "Record deleted successfully!"
+        description: "Record deleted successfully!",
       });
     } catch (error) {
-      console.error('Error deleting record:', error);
+      console.error("Error deleting record:", error);
       toast({
         title: "Error",
         description: "Failed to delete record",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
@@ -112,15 +119,15 @@ export default function SupabaseTest() {
               value={newField}
               onChange={(e) => setNewField(e.target.value)}
               placeholder="Enter test text..."
-              onKeyPress={(e) => e.key === 'Enter' && addRecord()}
+              onKeyPress={(e) => e.key === "Enter" && addRecord()}
             />
           </div>
-          <Button 
-            onClick={addRecord} 
+          <Button
+            onClick={addRecord}
             disabled={loading || !newField.trim()}
             className="mt-6"
           >
-            {loading ? 'Adding...' : 'Add Record'}
+            {loading ? "Adding..." : "Add Record"}
           </Button>
         </div>
 
@@ -131,15 +138,18 @@ export default function SupabaseTest() {
           ) : (
             <div className="space-y-2">
               {data.map((record) => (
-                <div key={record.id} className="flex items-center justify-between p-2 border rounded">
+                <div
+                  key={record.id}
+                  className="flex items-center justify-between p-2 border rounded"
+                >
                   <div>
                     <p className="font-medium">{record.test_field}</p>
                     <p className="text-sm text-gray-500">
-                      {new Date(record.created_at).toLocaleString()}
+                      {formatDate(record.created_at, "PPpp")}
                     </p>
                   </div>
-                  <Button 
-                    variant="destructive" 
+                  <Button
+                    variant="destructive"
                     size="sm"
                     onClick={() => deleteRecord(record.id)}
                   >
