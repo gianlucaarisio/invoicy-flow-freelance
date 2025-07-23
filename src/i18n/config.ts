@@ -3,8 +3,8 @@ import { initReactI18next } from "react-i18next";
 import HttpBackend from "i18next-http-backend";
 
 // Import only critical translations that need to be available immediately
-import itCommon from "@/locales/it/common.json";
-import enCommon from "@/locales/en/common.json";
+import itCommon from "../../public/locales/it/common.json";
+import enCommon from "../../public/locales/en/common.json";
 
 // Define critical resources that should be loaded immediately
 const criticalResources = {
@@ -195,7 +195,7 @@ i18n
 
     // Lazy loading configuration
     backend: {
-      loadPath: "/src/locales/{{lng}}/{{ns}}.json",
+      loadPath: "/locales/{{lng}}/{{ns}}.json",
 
       // Custom load function with caching and error recovery
       load: async (language: string, namespace: string, callback: Function) => {
